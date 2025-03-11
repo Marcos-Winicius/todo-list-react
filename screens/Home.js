@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, View, ScrollView, TextInput, Button, TouchableOpacity } from "react-native";
+import { StyleSheet, Text, View, ScrollView, TextInput, Button, TouchableOpacity, Linking } from "react-native";
 
-export default function HomeScreen() {
+export default function HomeScreen({navigation}) {
     const [lista, setLista] = useState([]); // Estado da lista de tarefas
     const [tarefa, setTarefa] = useState(""); // Estado do campo de entrada
 
@@ -22,7 +22,11 @@ export default function HomeScreen() {
 
     return (
         <ScrollView style={styles.container}>
-            <Text style={styles.title}>Lista de Tarefas</Text>
+            <Text style={styles.title}
+            onPress={()=>{
+                Linking.openURL('https://github.com/Marcos-Winicius/todo-list-react')
+            }}
+            >Lista de Tarefas</Text>
 
             {/* Campo de entrada e botão */}
             <View style={styles.inputContainer}>
@@ -48,6 +52,13 @@ export default function HomeScreen() {
                     </View>
                 ))}
             </View>
+            <TouchableOpacity onPress={()=>{
+                navigation.navigate('About', {userName: tarefa})
+            }}>
+                <Text>
+                    Ir para tela 2?
+                </Text>
+            </TouchableOpacity>
         </ScrollView>
     );
 }
