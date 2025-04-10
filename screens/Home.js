@@ -1,218 +1,120 @@
 import React, { useState } from "react";
-import { 
-  StyleSheet, Text, View, ScrollView, TextInput, 
-  TouchableOpacity, Linking, Platform 
-} from "react-native";
-import { DateTimePicker } from 'expo-date-time-picker';
-import * as Notifications from 'expo-notifications';
+import { StyleSheet, Text, View, ScrollView, TextInput, Button, TouchableOpacity, Linking } from "react-native";
 
-export default function HomeScreen({ navigation }) {
-  const [lista, setLista] = useState([]);
-  const [tarefa, setTarefa] = useState("");
-  const [dataSelecionada, setDataSelecionada] = useState(new Date());
-  const [mostrarDatePicker, setMostrarDatePicker] = useState(false);
+export default function HomeScreen({navigation}) {
+    const [lista, setLista] = useState([]); // Estado da lista de tarefas
+    const [tarefa, setTarefa] = useState(""); // Estado do campo de entrada
 
-  // Função para formatar data
-  const formatarData = (date) => {
-    return date.toLocaleString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+    // Função para adicionar tarefa
+    const adicionarTarefa = () => {
+        if (tarefa.trim() !== "") {
+            setLista([...lista, { id: Date.now(), nome: tarefa, concluida: false }]); // Adiciona nova tarefa
+            setTarefa(""); // Limpa o campo após adicionar
+        }
+    };
 
-  const adicionarTarefa = async () => {
-    if (tarefa.trim() !== "") {
-      const novaTarefa = { 
-        id: Date.now(), 
-        nome: tarefa, 
-        concluida: false,
-        data: dataSelecionada
-      };
-      
-      setLista([...lista, novaTarefa]);
-      setTarefa("");
-      setDataSelecionada(new Date());
-      
-      // Agendar notificação (implementação abaixo)
-      await agendarNotificacao(novaTarefa.nome, novaTarefa.data);
-    }
-  };
+    // Função para alternar o status da tarefa (concluir/desfazer)
+    const alternarConcluido = (id) => {
+        setLista(lista.map(item =>
+            item.id === id ? { ...item, concluida: !item.concluida } : item
+        ));
+    };
 
-  const agendarNotificacao = async (tarefaNome, data) => {
-    await Notifications.scheduleNotificationAsync({
-      content: {
-        title: "Lembrete de Tarefa",
-        body: `Não se esqueça de: "${tarefaNome}"`,
-        sound: true,
-      },
-      trigger: {
-        date: data,
-      },
-    });
-  };
+    return (
+        <ScrollView style={styles.container}>
+            <Text style={styles.title}
+            onPress={()=>{
+                Linking.openURL('https://github.com/Marcos-Winicius/todo-list-react')
+            }}
+            >Lista de Tarefas</Text>
 
-  // ... (mantenha as outras funções como alternarConcluido, removerTarefa, etc.)
-
-  return (
-    <ScrollView 
-      style={styles.container}
-      contentContainerStyle={styles.contentContainer}
-    >
-      {/* Título e Input mantidos iguais */}
-      
-      {/* Botão para selecionar data/hora */}
-      <TouchableOpacity 
-        style={styles.dateButton}
-        onPress={() => setMostrarDatePicker(true)}
-      >
-        <Text style={styles.dateButtonText}>
-          {formatarData(dataSelecionada)}
-        </Text>
-      </TouchableOpacity>
-
-      {/* Date Picker */}
-      {mostrarDatePicker && (
-        <DateTimePicker
-          value={dataSelecionada}
-          onChange={(event, date) => {
-            setMostrarDatePicker(false);
-            if (date) {
-              setDataSelecionada(date);
-            }
-          }}
-          mode="datetime"
-          minimumDate={new Date()}
-        />
-      )}
-
-      {/* Lista de tarefas com data */}
-      <View style={styles.lista}>
-        {lista.map((item) => (
-          <View key={item.id} style={[styles.tarefa, item.concluida && styles.tarefaConcluidaContainer]}>
-            <View style={styles.tarefaContent}>
-              <Text style={[styles.textoTarefa, item.concluida && styles.tarefaConcluida]}>
-                {item.nome}
-              </Text>
-              <Text style={styles.dataTarefa}>
-                {formatarData(new Date(item.data))}
-              </Text>
+            {/* Campo de entrada e botão */}
+            <View style={styles.inputContainer}>
+                <TextInput
+                    style={styles.input}
+                    placeholder="Digite a tarefa"
+                    value={tarefa}
+                    onChangeText={setTarefa}
+                />
+                <Button title="Adicionar" onPress={adicionarTarefa} />
             </View>
-            {/* Botões de ação */}
-          </View>
-        ))}
-      </View>
-    </ScrollView>
-  );
+
+            {/* Lista de tarefas */}
+            <View style={styles.lista}>
+                {lista.map((item) => (
+                    <View key={item.id} style={styles.tarefa}>
+                        <Text style={[styles.textoTarefa, item.concluida && styles.tarefaConcluida]}>
+                            {item.nome}
+                        </Text>
+                        <TouchableOpacity onPress={() => alternarConcluido(item.id)} style={styles.botaoConcluir}>
+                            <Text style={styles.textoBotao}>{item.concluida ? "Desfazer" : "Concluir"}</Text>
+                        </TouchableOpacity>
+                    </View>
+                ))}
+            </View>
+            <TouchableOpacity onPress={()=>{
+                navigation.navigate('About', {userName: tarefa})
+            }}>
+                <Text>
+                    Ir para tela 2?
+                </Text>
+            </TouchableOpacity>
+        </ScrollView>
+    );
 }
 
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: "#f5f5f5",
-        flex: 1,
+        backgroundColor: "#fff",
+        padding: 20,
     },
     contentContainer: {
         padding: 20,
     },
     title: {
-        fontSize: 26,
+        fontSize: 24,
         fontWeight: "bold",
-        textAlign: "center",
-        marginBottom: 20,
-        color: "#333",
+        marginBottom: 10,
     },
     inputContainer: {
         flexDirection: "row",
         alignItems: "center",
-        backgroundColor: "#fff",
-        borderRadius: 10,
-        paddingHorizontal: 15,
-        paddingVertical: 8,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-        elevation: 5,
-        marginBottom: 15,
+        marginBottom: 20,
     },
     input: {
         flex: 1,
-        fontSize: 16,
-        color: "#333",
-    },
-    dateButton: {
-        backgroundColor: "#fff",
-        borderRadius: 10,
-        padding: 15,
-        marginBottom: 15,
-        alignItems: "center",
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-    dateButtonText: {
-        fontSize: 16,
-        color: "#333",
-    },
-    addButton: {
-        backgroundColor: "#0987EE",
-        borderRadius: 10,
-        padding: 15,
-        marginBottom: 20,
-        alignItems: "center",
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-    addButtonText: {
-        fontSize: 18,
-        color: "#fff",
-        fontWeight: "bold",
+        borderWidth: 1,
+        padding: 10,
+        borderRadius: 5,
+        marginRight: 10,
     },
     lista: {
         marginTop: 10,
     },
     tarefa: {
-        backgroundColor: "#fff",
-        borderRadius: 10,
-        padding: 15,
-        marginBottom: 10,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-        elevation: 5,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: "#ddd",
     },
     tarefaContent: {
         marginBottom: 10,
     },
     textoTarefa: {
         fontSize: 16,
-        fontWeight: "500",
-        color: "#333",
-        marginBottom: 5,
-    },
-    dataTarefa: {
-        fontSize: 14,
-        color: "#666",
     },
     tarefaConcluida: {
         textDecorationLine: "line-through",
-        color: "#aaa",
+        color: "gray",
     },
-    tarefaConcluidaContainer: {
-        backgroundColor: "#e6f7ff",
-    },
-    acoesTarefa: {
-        flexDirection: "row",
-        justifyContent: "flex-end",
+    botaoConcluir: {
+        backgroundColor: "#0987EE",
+        paddingVertical: 5,
+        paddingHorizontal: 10,
+        borderRadius: 5,
     },
     botaoAcao: {
         paddingVertical: 5,
@@ -231,19 +133,6 @@ const styles = StyleSheet.create({
     },
     textoBotaoAcao: {
         color: "#fff",
-        fontWeight: "bold",
-        fontSize: 16,
-    },
-    navigateButton: {
-        backgroundColor: "#00B5E2",
-        paddingVertical: 12,
-        borderRadius: 10,
-        marginTop: 20,
-        alignItems: "center",
-    },
-    navigateButtonText: {
-        color: "#fff",
-        fontSize: 16,
         fontWeight: "bold",
     },
 });
