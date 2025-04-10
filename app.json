@@ -2,6 +2,14 @@
   "expo": {
     "name": "todo-list",
     "slug": "todo-list",
+    "plugins": [
+      [
+        "@react-native-community/datetimepicker",
+        {
+          "mode": "picker"
+        }
+      ]
+    ],
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -17,6 +25,7 @@
     },
     "android": {
       "adaptiveIcon": {
+        "useNextNotificationsApi": true,
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       }

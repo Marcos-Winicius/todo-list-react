@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
+import Notificacao from 'expo-notifications';
 import HomeScreen from './screens/Home.js';
 import AboutScreen from './screens/aboutScreen.js';
 
@@ -14,7 +15,7 @@ export default function App() {
           headerTintColor: "#fff",
         })}>
         <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="About" component={AboutScreen} />
+        <Stack.Screen name="Sobre" component={AboutScreen} />
         {/* <Stack.Screen name="AddTask" component={CadastroScreen} />
         <Stack.Screen name="EditTask" component={PerfilScreen}/> */}
       </Stack.Navigator>
